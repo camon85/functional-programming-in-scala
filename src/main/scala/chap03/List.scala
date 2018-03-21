@@ -154,6 +154,11 @@ object List {
       case (Cons(h1, t1), (Cons(h2, t2))) => Cons(f(h1, h2), zipWith(t1, t2)(f))
     }
 
+//  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean =
+//    sup match {
+//      case Nil => sub == Nil
+//      case Cons(h, t) => h == sub의 head
+//    }
 
   def main(args: Array[String]): Unit = {
     println(List("a","b") == Cons("a", Cons("b", Nil)))
@@ -260,22 +265,7 @@ object List {
     println(zipWith(List(1,2,3), List(4,5,6))(_ + _)) // Cons(5,Cons(7,Cons(9,Nil)))
     println(zipWith(List("my", "scala", "study"), List(8, 5, 5))((a, b) => a.length + b)) // Cons(10,Cons(10,Cons(10,Nil)))
 
-    println("== 연습문제 3.24 ==")
-    println()
-
-    println("== 연습문제 3.25 ==")
-    println()
-
-    println("== 연습문제 3.26 ==")
-    println()
-
-    println("== 연습문제 3.27 ==")
-    println()
-
-    println("== 연습문제 3.28 ==")
-    println()
-
-    println("== 연습문제 3.29 ==")
+    println("== 연습문제 3.24 == hasSubsequence")
     println()
 
   }
