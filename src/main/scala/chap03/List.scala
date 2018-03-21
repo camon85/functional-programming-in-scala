@@ -128,6 +128,33 @@ object List {
   def doubleListToStringList(ds: List[Double]) =
     foldRight(ds, Nil:List[String])((h,t) => Cons(h.toString, t))
 
+  def map[A,B](as: List[A])(f: A => B): List[B] =
+    foldRight(as, Nil: List[B])((h, t) => Cons(f(h), t))
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] =
+    concat(map(as)(f))
+
+  def filterByFlatMap[A](as: List[A])(f: A => Boolean): List[A] =
+    flatMap(as)((x) => if (f(x)) Cons(x, Nil) else Nil)
+
+  def zip(a1: List[Int], a2: List[Int]): List[Int] =
+    (a1, a2) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(h1, t1), (Cons(h2, t2))) => Cons(h1 + h2, zip(t1, t2))
+    }
+
+  def zipWith[A,B,C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] =
+    (as, bs) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(h1, t1), (Cons(h2, t2))) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+    }
+
+
   def main(args: Array[String]): Unit = {
     println(List("a","b") == Cons("a", Cons("b", Nil)))
 
@@ -214,40 +241,42 @@ object List {
     println(stringList)
 
     println("== 연습문제 3.18 == map 구현")
-    println()
+    println(map(List(1,2,3))((x: Int) => x.toString)) // Cons(1,Cons(2,Cons(3,Nil)))
+    println(map(List("abcde", "ab", "12345"))((x: String) => x.length)) // Cons(5,Cons(2,Cons(5,Nil)))
 
     println("== 연습문제 3.19 == filter 구현")
-    println()
+    println(filter(List(1,2,5,6))(_ < 3)) // Cons(1,Cons(2,Nil))
 
     println("== 연습문제 3.20 == flatMap 구현")
-    println()
+    println(flatMap(List(1,2,3))(i => List(i,i))) // Cons(1,Cons(1,Cons(2,Cons(2,Cons(3,Cons(3,Nil))))))
 
     println("== 연습문제 3.21 == flatMap을 이용해서 filer구현")
+    println(filterByFlatMap(List(1,2,5,6))(_ < 3)) // Cons(1,Cons(2,Nil))
+
+    println("== *연습문제 3.22 == 목록 두개를 받아 대응되는 요소를 더한 값으로 새로운 목록 구축")
+    println(zip(List(1,2,3), List(4,5,6))) // Cons(5,Cons(7,Cons(9,Nil)))
+
+    println("== 연습문제 3.23 ==")
+    println(zipWith(List(1,2,3), List(4,5,6))(_ + _)) // Cons(5,Cons(7,Cons(9,Nil)))
+    println(zipWith(List("my", "scala", "study"), List(8, 5, 5))((a, b) => a.length + b)) // Cons(10,Cons(10,Cons(10,Nil)))
+
+    println("== 연습문제 3.24 ==")
     println()
 
-//    println("== 연습문제 3.22 ==")
-//    println()
-//
-//    println("== 연습문제 3.23 ==")
-//    println()
-//
-//    println("== 연습문제 3.24 ==")
-//    println()
-//
-//    println("== 연습문제 3.25 ==")
-//    println()
-//
-//    println("== 연습문제 3.26 ==")
-//    println()
-//
-//    println("== 연습문제 3.27 ==")
-//    println()
-//
-//    println("== 연습문제 3.28 ==")
-//    println()
-//
-//    println("== 연습문제 3.29 ==")
-//    println()
+    println("== 연습문제 3.25 ==")
+    println()
+
+    println("== 연습문제 3.26 ==")
+    println()
+
+    println("== 연습문제 3.27 ==")
+    println()
+
+    println("== 연습문제 3.28 ==")
+    println()
+
+    println("== 연습문제 3.29 ==")
+    println()
 
   }
 
