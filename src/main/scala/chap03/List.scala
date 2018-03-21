@@ -1,20 +1,24 @@
 package chap03
 
+import scala.annotation.tailrec
+
 sealed trait List[+A]
 case object Nil extends List[Nothing]
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
-  def sum(ints: List[Int]): Int = ints match {
-    case Nil => 0
-    case Cons(x, xs) => x + sum(xs)
-  }
+  def sum(ints: List[Int]): Int =
+    ints match {
+      case Nil => 0
+      case Cons(x, xs) => x + sum(xs)
+    }
 
-  def product(ds: List[Double]): Double = ds match {
-    case Nil => 1.0
-    case Cons(0.0, _) => 0.0
-    case Cons(x, xs) => x * product(xs)
-  }
+  def product(ds: List[Double]): Double =
+    ds match {
+      case Nil => 1.0
+      case Cons(0.0, _) => 0.0
+      case Cons(x, xs) => x * product(xs)
+    }
 
   def apply[A](as: A*): List[A] =
     if (as.isEmpty) Nil
@@ -39,6 +43,7 @@ object List {
     loop(l, n)
   }
 
+  // 최초 생각한 loop버전
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
     def loop(list: List[A]): List[A] = {
       val head = list match {
@@ -49,6 +54,14 @@ object List {
       else loop(tail(list))
     }
     loop(l)
+  }
+
+  // case문에서 if를 사용한 버전
+  def dropWhile2[A](l: List[A], f: A => Boolean): List[A] = {
+    l match {
+      case Cons(h, _) if !f(h) => l
+      case _ => dropWhile2(tail(l), f)
+    }
   }
 
   def append[A](a1: List[A], a2: List[A]): List[A] =
@@ -63,6 +76,57 @@ object List {
       case Cons(h, _) => append(List(h), init(tail(l)))
     }
   }
+
+  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+    as match {
+      case Nil => z
+      case Cons(h, t) => f(h, foldRight(t, z)(f))
+    }
+  }
+
+  def sum2(ns: List[Int]) =
+    foldRight(ns, 0)(_ + _)
+//    foldRight(ns, 0)((x,y) => x + y)
+
+  def product2(ns: List[Double]) =
+    foldRight(ns, 1.0)(_ * _)
+//    foldRight(ns, 1.0)((x, y) => x * y)
+
+  def length[A](as: List[A]): Int = {
+    foldRight(as, 0)((_, z) => 1 + z)
+  }
+
+  @tailrec
+  def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = {
+    as match {
+      case Nil => z
+      case Cons(h, t) => foldLeft(t, f(z, h))(f)
+    }
+  }
+
+  def sumByFoldLeft(ints: List[Int]): Int =
+    foldLeft(ints, 0)(_ + _)
+
+  def productByFoldLeft(ns: List[Double]): Double =
+    foldLeft(ns, 1.0)(_ * _)
+
+  def lengthByFoldLeft[A](as: List[A]): Int =
+    foldLeft(as, 0)((z, _) => z + 1)
+
+  def reverse[A](as: List[A]) =
+    foldLeft(as, Nil: List[A])((x, y) => Cons(y, x))
+
+  def appendByFolRight[A](a1: List[A], a2: List[A]): List[A] =
+    foldRight(a1, a2)((x, y) => Cons(x, y))
+
+  def concat[A](list: List[List[A]]) =
+    foldRight(list, Nil: List[A])(append)
+
+  def addOne(ns: List[Int]) =
+    foldRight(ns, Nil: List[Int])((h, t) => Cons(h+1, t))
+
+  def doubleListToStringList(ds: List[Double]) =
+    foldRight(ds, Nil:List[String])((h,t) => Cons(h.toString, t))
 
   def main(args: Array[String]): Unit = {
     println(List("a","b") == Cons("a", Cons("b", Nil)))
@@ -100,39 +164,90 @@ object List {
     println("== 연습문제 3.5 dropWhile ==")
     // 조건에 해당하는 요소를 drop 시킨다. (첫 실패 지점까지 실행)
     println(dropWhile(List(1,2,3,4,5), (x: Int) => x < 3)) // Cons(3,Cons(4,Cons(5,Nil)))
+    println(dropWhile2(List(1,2,3,4,5), (x: Int) => x < 3)) // Cons(3,Cons(4,Cons(5,Nil)))
 
     // 처음부터 조건 실패 했으니 그대로 돌려준다.
     println(dropWhile(List(1,2,3,4,5), (x: Int) => x > 3)) // Cons(1,Cons(2,Cons(3,Cons(4,Cons(5,Nil)))))
+    println(dropWhile2(List(1,2,3,4,5), (x: Int) => x > 3)) // Cons(1,Cons(2,Cons(3,Cons(4,Cons(5,Nil)))))
 
     println("== 연습문제 3.6 init ==")
     println(init(List(1,2,3,4,5))) // Cons(1,Cons(2,Cons(3,Cons(4,Nil))))
 
-
     println("== 연습문제 3.7 ==")
+    // foldRight가 list를 모두 펼친 다음에 오른쪽부터 평가가 시작 된다.
+    // 중간에 재귀를 멈추지 않는다.
+
     println("== 연습문제 3.8 ==")
-    println("== 연습문제 3.9 ==")
-//    println("== 연습문제 3.10 ==")
-//    println("== 연습문제 3.11 ==")
-//    println("== 연습문제 3.12 ==")
-//    println("== 연습문제 3.13 ==")
-//    println("== 연습문제 3.14 ==")
-//    println("== 연습문제 3.15 ==")
-//    println("== 연습문제 3.16 ==")
-//    println("== 연습문제 3.17 ==")
-//    println("== 연습문제 3.18 ==")
-//    println("== 연습문제 3.19 ==")
-//    println("== 연습문제 3.20 ==")
-//    println("== 연습문제 3.21 ==")
+    println(foldRight(List(1,2,3), Nil:List[Int])(Cons(_, _))) // Cons(1,Cons(2,Cons(3,Nil)))
+    // foldRight는 Nil을 받으면 리스트의 다음 요소가 존재하더라도 않고 Nil을 돌려줘 버린다.
+
+    println("== 연습문제 3.9 length ==")
+    println(length(List(1,2,3,4,5,6,7,8)))
+
+    println("== 연습문제 3.10 foldLeft ==")
+    // 계산을 먼저 하고 loop를 돌려야 꼬리재귀 된다..
+    // foldRight는 꼬리재귀로 만들 수 없는건가?
+    println(foldLeft(List(1,2,3), 0)(_ + _)) // 6
+
+    println("== 연습문제 3.11 sum, product, length by foldLeft ==")
+    println(sumByFoldLeft(List(1, 2, 3, 10))) // 16
+    println(productByFoldLeft(List(1.0, 2.0, 10.0))) // 20.0
+    println(length(List(1, 2, 3, 4, 5, 6, 7, 8))) // 8
+
+    println("== 연습문제 3.12 목록의 역을 돌려주는 함수 ==")
+    println(reverse(List(1, 2, 3))) // Cons(3,Cons(2,Cons(1,Nil)))
+
+    println("== 연습문제 3.13 == foldLeft를 foldRight를 이용해서 구현 ")
+    println("TODO")
+
+    println("== 연습문제 3.14 == append를 foldLeft나 foldRight를 이용해서 구현")
+    println(appendByFolRight(List(1,2,3), List(4,5,6))) // Cons(1,Cons(2,Cons(3,Cons(4,Cons(5,Cons(6,Nil))))))
+
+    println("== 연습문제 3.15 == 목록들의 목록을 하나로 연결 ")
+    println(concat(List(List(1,2), List(3,4), List(5,6)))) // Cons(1,Cons(2,Cons(3,Cons(4,Cons(5,Cons(6,Nil))))))
+
+    println("== 연습문제 3.16 == 목록에 1을 더해서 반환")
+    println(addOne(List(1,2,3))) // Cons(2,Cons(3,Cons(4,Nil)))
+
+    println("== 연습문제 3.17 == List[Double]을 List[String]으로 변환")
+    val stringList: List[String] = doubleListToStringList(List(1.0, 2.0, 3.0))
+    println(stringList)
+
+    println("== 연습문제 3.18 == map 구현")
+    println()
+
+    println("== 연습문제 3.19 == filter 구현")
+    println()
+
+    println("== 연습문제 3.20 == flatMap 구현")
+    println()
+
+    println("== 연습문제 3.21 == flatMap을 이용해서 filer구현")
+    println()
+
 //    println("== 연습문제 3.22 ==")
+//    println()
+//
 //    println("== 연습문제 3.23 ==")
+//    println()
+//
 //    println("== 연습문제 3.24 ==")
+//    println()
+//
 //    println("== 연습문제 3.25 ==")
+//    println()
+//
 //    println("== 연습문제 3.26 ==")
+//    println()
+//
 //    println("== 연습문제 3.27 ==")
+//    println()
+//
 //    println("== 연습문제 3.28 ==")
+//    println()
+//
 //    println("== 연습문제 3.29 ==")
-
-
+//    println()
 
   }
 
