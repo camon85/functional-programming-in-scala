@@ -26,6 +26,7 @@ object List {
 
   def tail[A](as: List[A]): List[A] =
     as match {
+      case Nil => Nil
       case Cons(_, t) => t
     }
 
@@ -209,9 +210,10 @@ object List {
     // foldRight가 list를 모두 펼친 다음에 오른쪽부터 평가가 시작 된다.
     // 중간에 재귀를 멈추지 않는다.
 
-    println("== 연습문제 3.8 ==")
+    println("== 연습문제 3.8 == foldRight와 List자료 생성자들 사이의 관계")
     println(foldRight(List(1,2,3), Nil:List[Int])(Cons(_, _))) // Cons(1,Cons(2,Cons(3,Nil)))
     // foldRight는 Nil을 받으면 리스트의 다음 요소가 존재하더라도 않고 Nil을 돌려줘 버린다.
+    // 생서자를 넣으면 복사된다.
 
     println("== 연습문제 3.9 length ==")
     println(length(List(1,2,3,4,5,6,7,8)))
@@ -231,12 +233,14 @@ object List {
 
     println("== 연습문제 3.13 == foldLeft를 foldRight를 이용해서 구현 ")
     println("TODO")
+    // revers 한 다음에 foldLeft
 
     println("== 연습문제 3.14 == append를 foldLeft나 foldRight를 이용해서 구현")
     println(appendByFolRight(List(1,2,3), List(4,5,6))) // Cons(1,Cons(2,Cons(3,Cons(4,Cons(5,Cons(6,Nil))))))
 
     println("== 연습문제 3.15 == 목록들의 목록을 하나로 연결 ")
     println(concat(List(List(1,2), List(3,4), List(5,6)))) // Cons(1,Cons(2,Cons(3,Cons(4,Cons(5,Cons(6,Nil))))))
+    // foldLeft는 선형시간에 비례 하지않는다. n제곱 필요
 
     println("== 연습문제 3.16 == 목록에 1을 더해서 반환")
     println(addOne(List(1,2,3))) // Cons(2,Cons(3,Cons(4,Nil)))
@@ -267,7 +271,7 @@ object List {
 
     println("== 연습문제 3.24 == hasSubsequence")
     println()
-
+    // startWIth를 먼저 구현하자.
   }
 
 }
