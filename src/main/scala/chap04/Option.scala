@@ -50,15 +50,11 @@ object Option {
   def variance(xs: Seq[Double]): Option[Double] =
     mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
 
-//  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
-//    if (a == None || b == None) None
-//    else Some(f(a, b))
-// FIXME Option을 벗겨야 한다; flatMap? getOrElse?
-
-  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
-      if (a == None || b == None) None
-      else Some(f(a, b))
-
+  // Option을 벗겨야 한다; flatMap? getOrElse?
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = (a, b) match {
+    case (Some(x), Some(y)) => Some(f(x, y))
+    case _ => None
+  }
   def main(args: Array[String]): Unit = {
     println("== 연습문제 4.1 == Option에 대한 함수들 구현")
     // getOrElse는 B를 준다.
@@ -89,9 +85,9 @@ object Option {
     println("== 연습문제 4.3 == binary function을 이용해서 결합하는 일반적 함수 map2를 작성")
     println(map2(Some(1), Some(2))(_ + _))
 
-//    println("== 연습문제 4.4 == ")
-//
-//
+    println("== 연습문제 4.4 == ")
+
+
 //    println("== 연습문제 4.5 == ")
 //
 //
