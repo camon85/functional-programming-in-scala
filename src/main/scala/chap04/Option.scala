@@ -55,6 +55,37 @@ object Option {
     case (Some(x), Some(y)) => Some(f(x, y))
     case _ => None
   }
+
+  def map22[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a.flatMap(aa => b.map(bb => f(aa, bb)))
+    // a의 option을 벗긴다 => aa
+    // b의 option을 벗겨낸 bb값에 f 함수를 적용한다. C가 나온다 => Option[C]을 씌운다.
+
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => h.flatMap(x => sequence(t).map(x :: _))
+  }
+  // List(Some(1), Some(2))
+  // Some(1).flatMap(1 => sequence(List(2)).map(1 :: _))
+  // Some(1).flatMap(1 => Some(List(2))).map(1 :: _))
+  // Some(List(1,2))
+
+  def sequence2[A](a: List[Option[A]]): Option[List[A]] =
+    a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
+
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => f(h).flatMap(hh => traverse(t)(f).map(hh :: _))
+  }
+
+  def traverse2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a.foldRight[Option[List[B]]](Some(Nil))((x, y) => map2(f(x), y)(_ :: _))
+  // foldRight로 펼친다.
+  // f함수로 변환한 뒤 List로 합친다.
+
+  def sequenceBytraverse[A](a: List[Option[A]]): Option[List[A]] =
+    traverse(a)(x => x)
+
   def main(args: Array[String]): Unit = {
     println("== 연습문제 4.1 == Option에 대한 함수들 구현")
     // getOrElse는 B를 준다.
@@ -83,22 +114,15 @@ object Option {
     println(variance(Nil)) // None
 
     println("== 연습문제 4.3 == binary function을 이용해서 결합하는 일반적 함수 map2를 작성")
-    println(map2(Some(1), Some(2))(_ + _))
+    println(map2(Some(1), Some(2))(_ + _)) // Some(3)
 
-    println("== 연습문제 4.4 == ")
+    println("== 연습문제 4.4 == sequence")
+    println(sequence(List(Some(1), Some(2)))) // Some(List(1, 2))
 
-
-//    println("== 연습문제 4.5 == ")
-//
-//
-//    println("== 연습문제 4.6 == ")
-//
-//
-//    println("== 연습문제 4.7 == ")
-//
-//
-//    println("== 연습문제 4.8 == ")
-
+    println("== 연습문제 4.5 == traverse, sequenceBytraverse")
+    println(traverse(List(1,2,3,4))(x => Some(x.toString))) // Some(List(1, 2, 3, 4))
+    println(traverse(List(1,2,3,4))(x => Some(x.toString))) // Some(List(1, 2, 3, 4))
+    println(sequenceBytraverse(List(Some(1), Some(2)))) // Some(List(1, 2))
   }
 
 }
