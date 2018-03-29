@@ -1,5 +1,6 @@
 package chap04
 
+
 sealed trait Either[+E, +A] {
   def map[B](f: A => B): Either[E, B] = this match {
     case Left(e) => Left(e)
@@ -57,11 +58,16 @@ object Either {
 
   def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = traverse(es)(x => x)
 
+  def sequence2[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+    es.foldRight[Either[E, List[A]]](Right(Nil))((ee, el) => ee.map2(el)(_ :: _))
+
   def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = as match {
     case Nil => Right(Nil)
     case h :: t => f(h).flatMap(hh => traverse(t)(f).map(hh :: _))
   }
 
+  def traverse2[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    as.foldRight(Right(Nil):Either[E, List[B]])((ee, el) => f(ee).map2(el)(_ :: _))
 
   def main(args: Array[String]): Unit = {
     println("== 연습문제 4.6 == map, flatMap, orElse, map2 구현")

@@ -28,9 +28,11 @@ sealed trait Option[+A] {
   }
 
   // TODO flatMap, orElse, filter를 패턴매칭 없이 구현
-  def flatMap2[B](f: A => Option[B]): Option[B] = ???
+  def flatMap2[B](f: A => Option[B]): Option[B] =
+    map(f).getOrElse(None)
 
-  def orElse2[B >: A](ob: => Option[B]): Option[B] = ???
+  def orElse2[B >: A](ob: => Option[B]): Option[B] =
+    map(x => Some(x)).getOrElse(ob)
 
   def filter2(f: A => Boolean): Option[A] = ???
 
@@ -71,7 +73,7 @@ object Option {
   // Some(List(1,2))
 
   def sequence2[A](a: List[Option[A]]): Option[List[A]] =
-    a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
+    a.foldRight[Option[List[A]]](Some(Nil))((oe, ol) => map2(oe, ol)(_ :: _))
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
     case Nil => Some(Nil)
@@ -123,6 +125,8 @@ object Option {
     println(traverse(List(1,2,3,4))(x => Some(x.toString))) // Some(List(1, 2, 3, 4))
     println(traverse(List(1,2,3,4))(x => Some(x.toString))) // Some(List(1, 2, 3, 4))
     println(sequenceBytraverse(List(Some(1), Some(2)))) // Some(List(1, 2))
+
+    None.getOrElse(None)
   }
 
 }
