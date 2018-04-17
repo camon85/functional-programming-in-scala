@@ -64,6 +64,7 @@ object SimpleRNG {
         loop(count - 1, num :: acc, rng2)
       }
     }
+
     loop(count, Nil, rng)
   }
 
@@ -98,49 +99,93 @@ object SimpleRNG {
 
   def randIntDouble: Rand[(Int, Double)] = both(int, double)
 
-  def randDoubleInt: Rand[(Double,Int)] = both(double, int)
+  def randDoubleInt: Rand[(Double, Int)] = both(double, int)
 
-  def main(args: Array[String]): Unit = {
-    println("== 연습문제 6.1 == nonNegativeInt ")
-    println(nonNegativeInt(SimpleRNG(1)))
+  // def foldRight[B](z: B)(op: (A, B) => B): B
+  // input: [rng => (n1, rng1), rng1 => (n2, rng2), rng2 => (n3, rng3)]
+  // output: rng => [n1, n2, n3]
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(Nil: List[A]))((a, b) => map2(a, b)(_ :: _))
 
-    println("== 연습문제 6.2 == double")
-    println(double(SimpleRNG(1)))
+  //      fs.foldRight(unit(List[A]()))((a, b) => map2(a, b)(_ :: _))
 
-    println("== 연습문제 6.3 == intDouble, doubleInt, double3 ")
-    println(intDouble(SimpleRNG(1)))
-    println(doubleInt(SimpleRNG(1)))
-    println(double3(SimpleRNG(1)))
+  def ints2(count: Int): Rand[List[Int]] =
+    sequence(List.fill(count)(int))
 
-    println("== 연습문제 6.4 ==  ints")
-    println(ints(-1)(SimpleRNG(1))._1)
-    println(ints(0)(SimpleRNG(1))._1)
-    println(ints(1)(SimpleRNG(1))._1)
-    println(ints(10)(SimpleRNG(1))._1)
-    println(intsTailRecursive(10)(SimpleRNG(1))._1)
-
-    println("== 연습문제 6.5 == map을 이용해서 double 구현 ")
-    println(doubleByMap(SimpleRNG(1))_1)
-
-    println("== 연습문제 6.6 == map2 구현 ")
-//    println(map2(nonNegativeEven, double)(_ + _))
-
-    println("== 연습문제 6.7 == sequence 구현 ")
-    println()
-
-//    println("== 연습문제 6.8 == flatMpa을 구현하고 그것을 이용해서 nonNegativeLessThan 구현")
-//    println()
-//
-//    println("== 연습문제 6.9 == map과 map2를 flatMap을 이용해서 다시 구현하라")
-//    println()
-//
-//    println("== 연습문제 6.10 == unit, map, map2, flatMap, sequence를 일반화하라")
-//    println()
-//
-//    println("== 연습문제 6.11 == state automata 구현")
-//    println()
-
-
+  def nonNegativeLessThan(n: Int): Rand[Int] = {
+    rng =>
+      val (i, rng2) = nonNegativeInt(rng)
+      val mod = i % n
+      if (i + (n - 1) - mod >= 0)
+        (mod, rng2)
+      else nonNegativeLessThan(n)(rng2)
   }
 
-}
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
+    rng => {
+      val (a, rng1) = f(rng)
+      g(a)(rng1)
+    }
+
+  // ??
+  def nonNegativeLessThanByFlatMap(n: Int): Rand[Int] = {
+    flatMap(nonNegativeInt) { i =>
+      val mod = i % n
+      if (i + (n - 1) - mod >= 0)
+        unit(mod)
+      else
+        nonNegativeLessThan(n)
+    }
+  }
+    def mapByFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
+      flatMap(s)(a => unit(f(a)))
+
+    // def map[A, B](s: Rand[A])(f: A => B): Rand[B]
+    def map2ByFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+      flatMap(ra)(a => map(rb)(b => f(a, b)))
+
+    def main(args: Array[String]): Unit = {
+      println("== 연습문제 6.1 == nonNegativeInt ")
+      println(nonNegativeInt(SimpleRNG(1)))
+
+      println("== 연습문제 6.2 == double")
+      println(double(SimpleRNG(1)))
+
+      println("== 연습문제 6.3 == intDouble, doubleInt, double3 ")
+      println(intDouble(SimpleRNG(1)))
+      println(doubleInt(SimpleRNG(1)))
+      println(double3(SimpleRNG(1)))
+
+      println("== 연습문제 6.4 ==  ints")
+      println(ints(-1)(SimpleRNG(1))._1)
+      println(ints(0)(SimpleRNG(1))._1)
+      println(ints(1)(SimpleRNG(1))._1)
+      println(ints(10)(SimpleRNG(1))._1)
+      println(intsTailRecursive(10)(SimpleRNG(1))._1)
+
+      println("== 연습문제 6.5 == map을 이용해서 double 구현 ")
+      println(doubleByMap(SimpleRNG(1)) _1)
+
+      println("== 연습문제 6.6 == map2 구현 ")
+      //    println(map2(nonNegativeEven, double)(_ + _))
+
+      println("== 연습문제 6.7 == sequence 구현 ")
+      List.fill(5)(int).foreach(println)
+      println(ints2(5)(SimpleRNG(1))._1)
+
+      println("== 연습문제 6.8 == flatMap을 구현하고 그것을 이용해서 nonNegativeLessThan 구현")
+      println(nonNegativeLessThanByFlatMap(5)(SimpleRNG(1)))
+
+      println("== 연습문제 6.9 == map과 map2를 flatMap을 이용해서 다시 구현하라")
+      println()
+      //
+      //    println("== 연습문제 6.10 == unit, map, map2, flatMap, sequence를 일반화하라")
+      //    println()
+      //
+      //    println("== 연습문제 6.11 == state automata 구현")
+      //    println()
+
+
+    }
+
+  }
