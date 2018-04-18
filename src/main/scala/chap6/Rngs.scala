@@ -2,6 +2,11 @@ package chap6
 
 import scala.annotation.tailrec
 
+trait RNG {
+  def nextInt: (Int, RNG)
+}
+
+
 case class SimpleRNG(seed: Long) extends RNG {
   def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
@@ -107,7 +112,7 @@ object SimpleRNG {
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(Nil: List[A]))((a, b) => map2(a, b)(_ :: _))
 
-  //      fs.foldRight(unit(List[A]()))((a, b) => map2(a, b)(_ :: _))
+  // fs.foldRight(unit(List[A]()))((a, b) => map2(a, b)(_ :: _))
 
   def ints2(count: Int): Rand[List[Int]] =
     sequence(List.fill(count)(int))
@@ -137,55 +142,53 @@ object SimpleRNG {
         nonNegativeLessThan(n)
     }
   }
-    def mapByFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
-      flatMap(s)(a => unit(f(a)))
 
-    // def map[A, B](s: Rand[A])(f: A => B): Rand[B]
-    def map2ByFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
-      flatMap(ra)(a => map(rb)(b => f(a, b)))
+  def mapByFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s)(a => unit(f(a)))
 
-    def main(args: Array[String]): Unit = {
-      println("== 연습문제 6.1 == nonNegativeInt ")
-      println(nonNegativeInt(SimpleRNG(1)))
+  // def map[A, B](s: Rand[A])(f: A => B): Rand[B]
+  def map2ByFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a => map(rb)(b => f(a, b)))
 
-      println("== 연습문제 6.2 == double")
-      println(double(SimpleRNG(1)))
+  def main(args: Array[String]): Unit = {
+    println("== 연습문제 6.1 == nonNegativeInt ")
+    println(nonNegativeInt(SimpleRNG(1)))
 
-      println("== 연습문제 6.3 == intDouble, doubleInt, double3 ")
-      println(intDouble(SimpleRNG(1)))
-      println(doubleInt(SimpleRNG(1)))
-      println(double3(SimpleRNG(1)))
+    println("== 연습문제 6.2 == double")
+    println(double(SimpleRNG(1)))
 
-      println("== 연습문제 6.4 ==  ints")
-      println(ints(-1)(SimpleRNG(1))._1)
-      println(ints(0)(SimpleRNG(1))._1)
-      println(ints(1)(SimpleRNG(1))._1)
-      println(ints(10)(SimpleRNG(1))._1)
-      println(intsTailRecursive(10)(SimpleRNG(1))._1)
+    println("== 연습문제 6.3 == intDouble, doubleInt, double3 ")
+    println(intDouble(SimpleRNG(1)))
+    println(doubleInt(SimpleRNG(1)))
+    println(double3(SimpleRNG(1)))
 
-      println("== 연습문제 6.5 == map을 이용해서 double 구현 ")
-      println(doubleByMap(SimpleRNG(1)) _1)
+    println("== 연습문제 6.4 ==  ints")
+    println(ints(-1)(SimpleRNG(1))._1)
+    println(ints(0)(SimpleRNG(1))._1)
+    println(ints(1)(SimpleRNG(1))._1)
+    println(ints(10)(SimpleRNG(1))._1)
+    println(intsTailRecursive(10)(SimpleRNG(1))._1)
 
-      println("== 연습문제 6.6 == map2 구현 ")
-      //    println(map2(nonNegativeEven, double)(_ + _))
+    println("== 연습문제 6.5 == map을 이용해서 double 구현 ")
+    println(doubleByMap(SimpleRNG(1)) _1)
 
-      println("== 연습문제 6.7 == sequence 구현 ")
-      List.fill(5)(int).foreach(println)
-      println(ints2(5)(SimpleRNG(1))._1)
+    println("== 연습문제 6.6 == map2 구현 ")
+    //    println(map2(nonNegativeEven, double)(_ + _))
 
-      println("== 연습문제 6.8 == flatMap을 구현하고 그것을 이용해서 nonNegativeLessThan 구현")
-      println(nonNegativeLessThanByFlatMap(5)(SimpleRNG(1)))
+    println("== 연습문제 6.7 == sequence 구현 ")
+    List.fill(5)(int).foreach(println)
+    println(ints2(5)(SimpleRNG(1))._1)
 
-      println("== 연습문제 6.9 == map과 map2를 flatMap을 이용해서 다시 구현하라")
-      println()
-      //
-      //    println("== 연습문제 6.10 == unit, map, map2, flatMap, sequence를 일반화하라")
-      //    println()
-      //
-      //    println("== 연습문제 6.11 == state automata 구현")
-      //    println()
+    println("== 연습문제 6.8 == flatMap을 구현하고 그것을 이용해서 nonNegativeLessThan 구현")
+    println(nonNegativeLessThanByFlatMap(5)(SimpleRNG(1)))
 
-
-    }
-
+    println("== 연습문제 6.9 == map과 map2를 flatMap을 이용해서 다시 구현하라")
+    println()
+    //
+    //    println("== 연습문제 6.10 == unit, map, map2, flatMap, sequence를 일반화하라")
+    //    println()
+    //
+    //    println("== 연습문제 6.11 == state automata 구현")
+    //    println()
   }
+}
