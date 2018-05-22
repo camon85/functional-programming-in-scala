@@ -1,4 +1,4 @@
-package chap6
+package chap06
 import State._
 
 sealed trait Input

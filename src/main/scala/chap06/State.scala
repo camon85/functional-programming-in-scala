@@ -1,4 +1,4 @@
-package chap6
+package chap06
 
 case class State[S, +A](run: S => (A, S)) {
 
